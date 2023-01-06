@@ -1,0 +1,9 @@
+﻿<?xml version="1.0"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemCheckEGSGivenGamesDescription">Check games gifted by EGS in library</sys:String>
+    <sys:String x:Key="LOCEGS_Free_Games_Checker_GivenListDownloadFailErrorMessage">Impossible to download the game database. Error : {0}</sys:String>
+    <sys:String x:Key="LOCEGS_Free_Games_Checker_NoGivenGamesErrorMessage">Error: No game gifted on EGS found.</sys:String>
+    <sys:String x:Key="LOCEGS_Free_Games_Checker_ResultsMessage" xml:space="preserve">Games gifted by EGS in library : {0}
+Category &quot;{1}&quot; added to {2} game(s).</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_CategoryName" xml:space="preserve">Given by EGS</sys:String>
+</ResourceDictionary>
