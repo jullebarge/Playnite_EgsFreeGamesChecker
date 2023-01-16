@@ -6,3 +6,11 @@ Packages:
     PackageUrl: https://github.com/jullebarge/Playnite_EgsFreeGamesChecker/releases/download/0.1/EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708_0_1.pext    
     Changelog:
     - 'Initial version of the extension'
+  - Version: 0.2
+    RequiredApiVersion: 6.8.0
+    ReleaseDate: 2023-01-16
+    PackageUrl: https://github.com/jullebarge/Playnite_EgsFreeGamesChecker/releases/download/0.2/EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708_0_2
+    Changelog:
+    - 'Removed the option to add a category'
+    - 'Changed the source of the game list'
+    - 'Add the possibility to choose the tag name'
