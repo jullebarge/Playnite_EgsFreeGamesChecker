@@ -8,5 +8,6 @@
 Category &quot;{1}&quot; added to {2} game(s).</sys:String>
     <sys:String x:Key="LOCEGS_Free_Games_Checker_ResultsMessageTag" xml:space="preserve">Games gifted by EGS in library : {0}
 Tag &quot;{1}&quot; added to {2} game(s).</sys:String>
-	<sys:String x:Key="LOCEGS_Free_Games_Checker_CategoryName" xml:space="preserve">Given by EGS</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemUpdateTagName" xml:space="preserve">Update Tag Name</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_PopupTagLabel" xml:space="preserve">Tag name:</sys:String>
 </ResourceDictionary>
