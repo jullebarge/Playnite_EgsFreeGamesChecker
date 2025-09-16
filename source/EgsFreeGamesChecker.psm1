@@ -6,7 +6,7 @@ function GetMainMenuItems
     
     $menuItem1 = New-Object Playnite.SDK.Plugins.ScriptMainMenuItem
     $menuItem1.Description = [Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_MenuItemAddTagEGSGivenGamesDescription")
-    $menuItem1.FunctionName = "Add-EgsGivenTag"
+    $menuItem1.FunctionName = "CheckLibrary"
     $menuItem1.MenuSection = "@EGS Free Games checker"
 	
 	$menuItem2 = New-Object Playnite.SDK.Plugins.ScriptMainMenuItem
@@ -14,11 +14,53 @@ function GetMainMenuItems
     $menuItem2.FunctionName = "UpdateTagName"
     $menuItem2.MenuSection = "@EGS Free Games checker"
 	
-    return $menuItem1
+    return $menuItem1, $menuItem2
 
 }
 
-function Add-EgsGivenTag
+function OnApplicationStarted
+{
+    Register-ObjectEvent -InputObject $PlayniteApi.Database.Games -EventName ItemCollectionChanged -Action {
+		
+		#Parameters
+		$ExtensionName = "EGS Free Games checker"
+		$CountertagAdded = 0
+		$csvFilePath = $CurrentExtensionDataPath + "\EpicGameList.csv"
+		$csvUrl = "https://raw.githubusercontent.com/jullebarge/Playnite_EgsFreeGamesChecker/main/csv/EpicGameList.csv"
+		
+		try {
+			Invoke-WebRequest $csvUrl -OutFile $csvFilePath
+		} catch {
+			$errorMessage = $_.Exception.Message
+			$__logger.Error("$ExtensionName - Impossible to download the game database. Error : $errorMessage")
+		 return
+		}
+		
+		# Import the CSV of given games
+		$GivenEgsGames = Import-Csv $csvFilePath
+		$__logger.Info("$ExtensionName - $($GivenEgsGames.count) games found in the EGS given list")
+		
+		if ($GivenEgsGames.count -eq 0)
+		{
+			$__logger.Error("$ExtensionName - Error: No game gifted on EGS found")
+			return
+		}
+		
+		foreach ($game in $event.SourceEventArgs.addedItems) {
+		
+			$__logger.Info("$ExtensionName - Checking the game $($game)")
+			$Result = CheckGame $game $GivenEgsGames 
+			if ($Result -eq "GivenAdded")
+			{
+				$CountertagAdded++
+			}
+		}
+
+		$__logger.Info("$ExtensionName - Tag added to $CountertagAdded game(s).")
+    }
+}
+
+function CheckLibrary
 {
     param(
         $scriptMainMenuItemActionArgs
@@ -28,20 +70,11 @@ function Add-EgsGivenTag
     $ExtensionName = "EGS Free Games checker"
 	$countergivenGame = 0
     $CountertagAdded = 0
-	$EnableGgDeals = $false
-	$EnableITAD = $true
-	$ggdealsUrl = "https://gg.deals/games/?platform=1&type=1&title="
-	$ItadPlainUrl = "https://api.isthereanydeal.com/v02/game/plain/?key="
-	$IteadHistoricalLowUrl = "https://api.isthereanydeal.com/v01/game/lowest/?key="
-	$key = "380c5031d9ca9a5185af32d5a725c2e40786b8ea"
-	$tagFilePath = $CurrentExtensionDataPath + "\tagname.txt"
 	$csvFilePath = $CurrentExtensionDataPath + "\EpicGameList.csv"
-	
-	UpdateTagName
-    $tagName = Get-Content $tagFilePath
-    $tagEGS = $PlayniteApi.Database.Tags.Add($tagName)
-
 	$csvUrl = "https://raw.githubusercontent.com/jullebarge/Playnite_EgsFreeGamesChecker/main/csv/EpicGameList.csv"
+	$tagFilePath = $CurrentExtensionDataPath + "\tagname.txt"
+	
+	# Get the CSV	
 	try {
 		Invoke-WebRequest $csvUrl -OutFile $csvFilePath
 	} catch {
@@ -62,197 +95,100 @@ function Add-EgsGivenTag
 
 	foreach ($game in $PlayniteApi.Database.Games) {
 		
-		$gameFound = $false
-		
-		#Ignore if game is not an EGS game
-		$gameLibraryPlugin = [Playnite.SDK.BuiltinExtensions]::GetExtensionFromId($game.PluginId)
-		if ($gameLibraryPlugin -ne 'EpicLibrary')
-        {
-            $__logger.Info("$ExtensionName - Game `"$($game.name)`" is not an EGS game")
-			continue
-        }
-		
-		#Verify if the EGS tag is already present
-		if ($null -ne $game.Tags)
-        {
-            $EGSTagPresent = $false
-            foreach ($tag in $game.Tags) {
-                if ($tag.Name -eq $tagName)
-                {
-                    $__logger.Info("$ExtensionName - Game `"$($game.name)`" already has `"$($tagName)`" tag")
-                    $EGSTagPresent = $true
-					$countergivenGame++
-                    break
-                }
-            }
-
-            if ($EGSTagPresent -eq $true)
-            {
-                continue
-            }
-        }
-	
-		# Looking for the game in the CSV provided with the extension
-		$gameName = $game.name.ToLower() -replace '[^\p{L}\p{Nd}]', ''
-		foreach ($item in $GivenEgsGames){
-			$itemName = $item.name.ToLower() -replace '[^\p{L}\p{Nd}]', ''
-			
-			if ($itemName -eq $gameName)
-			{
-				$__logger.Info("$ExtensionName - Added free EGS tag to `"$($game.name)`".")
-				$gameFound = $true
-				$CountertagAdded++
-				$countergivenGame++
-				# Add tag Id to game
-				if ($game.TagIds)
-				{
-					$game.TagIds += $tagEGS.Id
-					break
-				}
-				else
-				{
-					# Fix in case game has null TagIds
-					$game.TagIds = $tagEGS.Id
-					break
-				}			
-			}
-		}
-		
-		# If the game is not found in the CSV, we check on GG Deals or ITAD
-		if (!$gameFound)
+		$Result = CheckGame $game $GivenEgsGames 
+		if ($Result -eq "GivenAdded")
 		{
-			if ($EnableGgDeals)
+			$countergivenGame++
+			$CountertagAdded++
+		}
+		elseif ($Result -eq "Given")
+		{
+			$countergivenGame++
+		}
+	}
+
+	$tagName = Get-Content $tagFilePath
+	
+    $PlayniteApi.Dialogs.ShowMessage(([Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_ResultsMessageTag") -f  $countergivenGame, $tagName, $CountertagAdded), $ExtensionName)
+}
+
+function CheckGame ($gameToCheck, $CsvList)
+{
+	# $__logger.Debug("Start CheckGame")
+	#Parameters
+    $ExtensionName = "EGS Free Games checker"
+	$tagFilePath = $CurrentExtensionDataPath + "\tagname.txt"
+	
+	$ReturnValue = ""
+	
+    $tagName = Get-Content $tagFilePath
+	if ($tagName -eq "")
+    {
+		UpdateTagName
+		$tagName = Get-Content $tagFilePath
+    }
+	
+    $tagEGS = $PlayniteApi.Database.Tags.Add($tagName)
+	
+	#Ignore if game is not an EGS game
+	$gameLibraryPlugin = [Playnite.SDK.BuiltinExtensions]::GetExtensionFromId($gameToCheck.PluginId)
+	if ($gameLibraryPlugin -ne 'EpicLibrary')
+	{
+		$__logger.Info("$ExtensionName - Game `"$($gameToCheck.name)`" is not an EGS game")
+		continue
+	}
+	
+	#Verify if the EGS tag is already present
+	if ($null -ne $gameToCheck.Tags)
+	{
+		$EGSTagPresent = $false
+		foreach ($tag in $gameToCheck.Tags)
+		{
+			if ($tag.Name -eq $tagName)
 			{
-				$__logger.Info("$ExtensionName - Looking for `"$($game.name)`" on GG Deals")
-				try {
-					$uri = $ggdealsUrl + $game.name
-					$req = Invoke-WebRequest $uri
-				} catch {
-					$errorMessage = $_.Exception.Message
-					$PlayniteApi.Dialogs.ShowErrorMessage(([Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_GivenListDownloadFailErrorMessage") -f $errorMessage), $ExtensionName)
-				 return
-				}
-				
-				$gameLink =  $req.Links | Where-Object class -like 'full-link' | select -First 1 -expand href
-				if (!$gameLink.Contains("/game/"))
-				{
-					$__logger.Info("$ExtensionName - Error getting the page link for `"$($game.name)`".")
-					continue
-				}
-				
-				$fullLink = "https://gg.deals" + $gameLink
-				$__logger.Info("$ExtensionName - fullLink = $($fullLink)")
-				
-				try {
-					$page = Invoke-WebRequest -Uri $fullLink -UseBasicParsing
-				} catch {
-					$errorMessage = $_.Exception.Message
-					$PlayniteApi.Dialogs.ShowErrorMessage(([Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_GivenListDownloadFailErrorMessage") -f $errorMessage), $ExtensionName)
-				 return
-				}
-				
-				$HTML = New-Object -Com "HTMLFile"
-				$HTML.IHTMLDocument2_write($page.Content)
-
-				$priceHistory = ($HTML.getElementById('game-lowest-tab-price')).innerText.replace("`r`n","")
-				
-				if ($priceHistory.Contains("Free Epic Games Store"))
-				{
-					$__logger.Info("$ExtensionName - Add free EGS tag to `"$($game.name)`".")
-					$CountertagAdded++
-					$countergivenGame++
-					# Add tag Id to game
-					if ($game.TagIds)
-					{
-						$game.TagIds += $tagEGS.Id
-					}
-					else
-					{
-						# Fix in case game has null TagIds
-						$game.TagIds = $tagEGS.Id
-					}
-				}
-			}
-			elseif ($EnableITAD)
-			{
-
-				#Look for the game plains on ITAD API
-				try {
-					$uri = $ItadPlainUrl + $key + "&shop=epic&title=" + $game.name
-					$webClient = New-Object System.Net.WebClient
-					$webClient.Encoding = [System.Text.Encoding]::UTF8
-					$downloadedString = $webClient.DownloadString($uri)
-					$gamePlain = $downloadedString | ConvertFrom-Json
-					$webClient.Dispose()
-				} catch {
-					$errorMessage = $_.Exception.Message
-					$PlayniteApi.Dialogs.ShowErrorMessage(([Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_GivenListDownloadFailErrorMessage") -f $errorMessage), $ExtensionName)
-				 return
-				}
-
-				if ($gamePlain.meta.match -eq "false")
-				{
-					$__logger.Info("$ExtensionName - `"$($uri)`" did not produce any results")
-					continue
-				}
-				
-				if ($gamePlain.meta.active -eq "false")
-				{
-					$__logger.Info("$ExtensionName - `"$($uri)`" did not have price on ITAD")
-					continue
-				}
-				
-				$itadPlain = $gamePlain.data.plain
-				#$__logger.Info("$ExtensionName - Game $($gameName) => Plain = $($itadPlain)")
-				
-				if (!$itadPlain)
-				{
-					$__logger.Info("$ExtensionName - Plain not found for `"$($gameName)`"")
-					continue
-				}
-				
-				#Look for the game historical lowest price on EGS with ITAD API
-				try {
-					$uri = $IteadHistoricalLowUrl + $key + "&shop=epic&plains=" + $itadPlain
-					$webClient = New-Object System.Net.WebClient
-					$webClient.Encoding = [System.Text.Encoding]::UTF8
-					$downloadedString = $webClient.DownloadString($uri)
-					$gameInfo = $downloadedString | ConvertFrom-Json
-					$webClient.Dispose()
-				} catch {
-					$errorMessage = $_.Exception.Message
-					$PlayniteApi.Dialogs.ShowErrorMessage(([Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_GivenListDownloadFailErrorMessage") -f $errorMessage), $ExtensionName)
-				 return
-				}
-				
-				$price = $gameInfo.data.${itadPlain}.price
-				$cut = $gameInfo.data.${itadPlain}.cut
-				
-				if (($price -eq 0) -and ($cut -eq 100))
-				{
-					$__logger.Info("$ExtensionName - Add free EGS tag to `"$($game.name)`".")
-					$CountertagAdded++
-					$countergivenGame++
-					# Add tag Id to game
-					if ($game.TagIds)
-					{
-						$game.TagIds += $tagEGS.Id
-					}
-					else
-					{
-						# Fix in case game has null TagIds
-						$game.TagIds = $tagEGS.Id
-					}			
-				}
+				$__logger.Info("$ExtensionName - Game `"$($gameToCheck.name)`" already has `"$($tagName)`" tag")
+				$EGSTagPresent = $true
+				$ReturnValue = "Given"
+				break
 			}
 		}
-		
-		# Update game in database
-		$PlayniteApi.Database.Games.Update($game)
-	
-	}	
 
-    $PlayniteApi.Dialogs.ShowMessage(([Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_ResultsMessageTag") -f  $countergivenGame, $tagName, $CountertagAdded), $ExtensionName)
+		if ($EGSTagPresent -eq $true)
+		{
+			# $__logger.Debug("End CheckGame because game already has the tag")
+			return "Given"
+		}
+	}
+
+	# Looking for the game in the CSV provided with the extension
+	$gameName = Clean-Text($gameToCheck.name)
+	foreach ($item in $CsvList){
+		$itemName = Clean-Text($item.name)
+		
+		if ($itemName -eq $gameName)
+		{
+			$__logger.Info("$ExtensionName - Added free EGS tag to `"$($gameToCheck.name)`".")
+			$ReturnValue = "GivenAdded"
+			# Add tag Id to game
+			if ($gameToCheck.TagIds)
+			{
+				$gameToCheck.TagIds += $tagEGS.Id
+				break
+			}
+			else
+			{
+				# Fix in case game has null TagIds
+				$gameToCheck.TagIds = $tagEGS.Id
+				break
+			}			
+		}
+	}
+	
+	# Update game in database
+	$PlayniteApi.Database.Games.Update($gameToCheck)
+	# $__logger.Debug("End CheckGame. ReturnValue = " + $ReturnValue)
+	return $ReturnValue
+		
 }
 
 function UpdateTagName
@@ -262,11 +198,12 @@ function UpdateTagName
     )
 	
 	$ExtensionName = "EGS Free Games checker"
+	$defaultTagName = [Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_DefaultTagName")
 	# $__logger.Info("$ExtensionName - CurrentExtensionDataPath = $($CurrentExtensionDataPath)")
 	$tagFilePath = $CurrentExtensionDataPath + "\tagname.txt"
 	if ((Test-Path $tagFilePath) -ne $true) {
 		New-Item $tagFilePath
-		Set-Content $tagFilePath "Given by EGS"
+		Set-Content $tagFilePath $defaultTagName
 	}
 	
 	[void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
@@ -275,7 +212,27 @@ function UpdateTagName
 	$msg   = [Playnite.SDK.ResourceProvider]::GetString("LOCEGS_Free_Games_Checker_PopupTagLabel")
 
 	$oldTagName = Get-Content $tagFilePath
+	if ($oldTagName -eq "")
+	{
+		$oldTagName = $defaultTagName
+	}
+	
 	$tagName = [Microsoft.VisualBasic.Interaction]::InputBox($msg, $title, $oldTagName)
-	$__logger.Info("$ExtensionName - tagName = $($tagName)")
+	# $__logger.Info("$ExtensionName - tagName after popup = $($tagName)")
 	Set-Content $tagFilePath $tagName
+}
+
+function Clean-Text 
+{
+    param (
+        [string]$text
+    )
+
+    $text = [System.Text.Encoding]::UTF8.GetString([System.Text.Encoding]::GetEncoding("ISO-8859-8").GetBytes($text))
+	
+    $text = $text -replace '[^a-zA-Z0-9\s]', '' -replace '[:-]', ''
+
+    $text = $text.ToLower().Trim()
+
+    return $text
 }
