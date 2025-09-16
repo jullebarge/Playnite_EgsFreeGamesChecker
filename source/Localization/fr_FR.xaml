@@ -1,13 +1,15 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemAddCatEGSGivenGamesDescription">Ajouter une catégorie aux jeux donnés sur l'EGS</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemAddTagEGSGivenGamesDescription">Ajouter une étiquette aux jeux donnés sur l'EGS</sys:String>
     <sys:String x:Key="LOCEGS_Free_Games_Checker_GivenListDownloadFailErrorMessage">Impossible de télécharger la base de données des jeux donnés. Erreur : {0}</sys:String>
     <sys:String x:Key="LOCEGS_Free_Games_Checker_NoGivenGamesErrorMessage">Erreur: Aucun jeu donné sur l'EGS trouvé.</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_TagNameEmptyInfoMessage">Le tag est vide, annulation de la mise à jour</sys:String>
     <sys:String x:Key="LOCEGS_Free_Games_Checker_ResultsMessageCat" xml:space="preserve">Jeux donnés sur l'EGS dans la bibliothèque : {0}
 Catégorie &quot;{1}&quot; ajoutée à {2} jeu(x).</sys:String>
     <sys:String x:Key="LOCEGS_Free_Games_Checker_ResultsMessageTag" xml:space="preserve">Jeux donnés sur l'EGS dans la bibliothèque : {0}
 Etiquette &quot;{1}&quot; ajoutée à {2} jeu(x).</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemUpdateTagName" xml:space="preserve">Changer le libellé du tag</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_PopupTagLabel" xml:space="preserve">Libellé du tag:</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_DefaultTagName" xml:space="preserve">Donné par EGS</sys:String>
 </ResourceDictionary>
