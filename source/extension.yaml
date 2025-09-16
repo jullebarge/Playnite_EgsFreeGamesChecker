@@ -1,7 +1,7 @@
 Id: EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708
 Name: EGS Free Games checker
 Author: JulLeBarge
-Version: 0.2
+Version: 0.4
 Module: EgsFreeGamesChecker.psm1
 Type: Script
 Icon: icon.png
