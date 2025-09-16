@@ -14,3 +14,9 @@ Packages:
     - 'Removed the option to add a category (you can only add a tag now)'
     - 'Changed the source of the game list'
     - 'Add the possibility to choose the tag name when starting the check'
+   - Version: 0.4
+    RequiredApiVersion: 6.8.0
+    ReleaseDate: 2025-09-16
+    PackageUrl: https://github.com/jullebarge/Playnite_EgsFreeGamesChecker/releases/download/0.4/EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708_0_4.pext
+    Changelog:
+    - 'Code rework to fix some issues'
