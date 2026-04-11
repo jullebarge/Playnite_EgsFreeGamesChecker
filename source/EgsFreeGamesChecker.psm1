@@ -121,7 +121,7 @@ function CheckGame ($gameToCheck, $CsvList)
 	
 	$ReturnValue = ""
 	
-    $tagName = Get-Content $tagFilePath
+    $tagName = Get-Content $tagFilePath -ErrorAction SilentlyContinue
 	if ($tagName -eq "")
     {
 		UpdateTagName
