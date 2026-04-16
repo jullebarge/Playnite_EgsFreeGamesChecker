@@ -20,3 +20,9 @@ Packages:
     PackageUrl: https://github.com/jullebarge/Playnite_EgsFreeGamesChecker/releases/download/0.4/EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708_0_4.pext
     Changelog:
     - 'Code rework to fix some issues'
+  - Version: 0.5
+    RequiredApiVersion: 6.8.0
+    ReleaseDate: 2026-04-16
+    PackageUrl: https://github.com/jullebarge/Playnite_EgsFreeGamesChecker/releases/download/0.5/EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708_0_5.pext
+    Changelog:
+    - 'Version 0.5 release'
