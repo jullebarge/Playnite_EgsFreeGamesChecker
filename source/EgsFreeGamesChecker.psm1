@@ -377,11 +377,20 @@ function GetMainMenuItems
     return $menuItem1, $menuItem2, $menuItem3
 }
 
+# Playnite invokes the entry points below through their CommandInfo, which does not run them
+# in this module's scope: $script: variables read directly in an entry point are $null.
+# Entry points must therefore only delegate to internal functions (called by name, they do
+# run in module scope) and never touch $script: themselves.
+
 function OnApplicationStarted
 {
     Initialize-TagFile
     Initialize-FreeGamesData
+    Register-NewGamesHandler
+}
 
+function Register-NewGamesHandler
+{
     Register-ObjectEvent -InputObject $PlayniteApi.Database.Games -EventName ItemCollectionChanged -MessageData $script:State -Action {
         $state = $event.MessageData
         $addedItems = $event.SourceEventArgs.AddedItems
@@ -463,6 +472,11 @@ function RefreshFreeGames
         $scriptMainMenuItemActionArgs
     )
 
+    Invoke-RefreshFreeGames
+}
+
+function Invoke-RefreshFreeGames
+{
     $refreshed = Update-FreeGamesCache -Force
 
     if ($refreshed -and $script:State.Loaded)
@@ -484,6 +498,11 @@ function UpdateTagName
         $scriptMainMenuItemActionArgs
     )
 
+    Invoke-UpdateTagName
+}
+
+function Invoke-UpdateTagName
+{
     $defaultTagName = [Playnite.SDK.ResourceProvider]::GetString('LOCEGS_Free_Games_Checker_DefaultTagName')
     if ([string]::IsNullOrWhiteSpace($defaultTagName)) { $defaultTagName = 'Given by EGS' }
 
