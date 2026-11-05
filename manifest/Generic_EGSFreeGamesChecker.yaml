@@ -26,3 +26,13 @@ Packages:
     PackageUrl: https://github.com/jullebarge/Playnite_EgsFreeGamesChecker/releases/download/0.5/EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708_0_5.pext
     Changelog:
     - 'Version 0.5 release'
+  - Version: 0.6
+    RequiredApiVersion: 6.8.0
+    ReleaseDate: 2026-11-05
+    PackageUrl: https://github.com/jullebarge/Playnite_EgsFreeGamesChecker/releases/download/0.6/EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708_0_6.pext
+    Changelog:
+    - 'Replaced the CSV list with a JSON dataset refreshed every day by GitHub Actions'
+    - 'Full EGS giveaway backfill since 2018, including the games inside bundle giveaways'
+    - 'Automatic library rescan when the dataset changes'
+    - 'Games whose free period has not started yet are not tagged'
+    - 'Added a menu entry to refresh the list without rescanning the library'
