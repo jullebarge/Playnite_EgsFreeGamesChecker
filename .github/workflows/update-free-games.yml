@@ -1,0 +1,140 @@
+name: Update EGS free games
+
+on:
+  schedule:
+    # 17:00 UTC = 18:00 Paris (winter) / 19:00 Paris (summer).
+    # The EGS rotation happens at 15:00 UTC (summer) or 16:00 UTC (winter).
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'daily = official EGS endpoint only | reconcile = full EGData backfill + bundle expansion'
+        type: choice
+        options:
+          - daily
+          - reconcile
+        default: daily
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: update-free-games
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update dataset
+        shell: pwsh
+        run: ./scripts/Update-FreeGames.ps1 -Mode "${{ inputs.mode || 'daily' }}" -Ci
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/freeGames.json source/data/freeGames.json
+          if git diff --cached --quiet; then
+            echo "No dataset change, nothing to commit."
+          else
+            git commit -m "chore: update EGS free games (${{ inputs.mode || 'daily' }})"
+            git push
+          fi
+
+      - name: Manage bundle issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const data = JSON.parse(fs.readFileSync('data/freeGames.json', 'utf8'));
+            const games = Array.isArray(data.games) ? data.games : [];
+            const bundles = games.filter(g => g.type === 'BUNDLE');
+            const unexpanded = bundles.filter(b => b.expanded !== true);
+
+            const label = 'egs-bundle';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const titleFor = title => `Bundle EGS à éclater : ${title}`;
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            // Make sure the label exists (idempotent).
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: label });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name: label,
+                color: 'FBCA04',
+                description: 'Bundle EGS dont les jeux composants doivent être ajoutés'
+              });
+            }
+
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              labels: label,
+              per_page: 100
+            });
+
+            // Open an issue for every unexpanded bundle, without duplicates.
+            for (const bundle of unexpanded) {
+              const title = titleFor(bundle.title);
+              if (openIssues.some(issue => issue.title === title)) continue;
+
+              const body = [
+                `Le bundle **${bundle.title}** a été offert du ${bundle.startDate} au ${bundle.endDate ?? 'date inconnue'}, mais ses jeux composants ne sont pas encore dans la liste.`,
+                '',
+                `- offerId : \`${bundle.offerId}\``,
+                `- Run : ${runUrl}`,
+                '',
+                'Pour corriger : **Actions** → **Update EGS free games** → **Run workflow** → mode `reconcile`.',
+                '',
+                'Cette issue sera fermée automatiquement une fois les composants ajoutés.'
+              ].join('\n');
+
+              await github.rest.issues.create({ owner, repo, title, labels: [label], body });
+              core.info(`Issue created: ${title}`);
+            }
+
+            // Close issues whose bundle has been expanded since.
+            for (const issue of openIssues) {
+              const bundle = bundles.find(b => b.expanded === true && titleFor(b.title) === issue.title);
+              if (!bundle) continue;
+
+              const components = games
+                .filter(g => g.bundleId === bundle.offerId)
+                .map(g => `- ${g.title}`)
+                .join('\n');
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issue.number,
+                body: `Composants ajoutés :\n\n${components || '- (aucun composant trouvé)'}\n\nIssue fermée automatiquement.`
+              });
+              await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: 'closed' });
+              core.info(`Issue closed: ${issue.title}`);
+            }
+
+            if (unexpanded.length > 0) {
+              core.warning(`${unexpanded.length} bundle(s) à éclater : ${unexpanded.map(b => b.title).join(', ')}`);
+              await core.summary
+                .addHeading('Bundles EGS à éclater', 2)
+                .addList(unexpanded.map(b => b.title))
+                .addRaw('Lancez le workflow en mode `reconcile` pour ajouter les jeux composants.')
+                .write();
+            }

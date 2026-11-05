@@ -1,0 +1,8 @@
+# Packaged extension binaries (built with Playnite Toolbox, uploaded as release assets)
+pack/
+*.pext
+
+# Local tooling
+.vs/
+.vscode/
+*.user
