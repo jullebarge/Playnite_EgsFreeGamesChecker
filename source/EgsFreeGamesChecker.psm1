@@ -194,7 +194,7 @@ function Update-FreeGamesCache
     if (-not $Force -and (Test-Path $cache))
     {
         $age = (Get-Date) - (Get-Item $cache).LastWriteTime
-        if ($age.TotalHours -lt $script:CacheMaxAgeHours) { return }
+        if ($age.TotalHours -lt $script:CacheMaxAgeHours) { return $true }
     }
 
     $temp = "$cache.tmp"
@@ -210,11 +210,13 @@ function Update-FreeGamesCache
         Move-Item -Path $temp -Destination $cache -Force
         Load-FreeGamesData $cache
         $__logger.Info("$script:ExtensionName - Dataset refreshed from $script:JsonUrl")
+        return $true
     }
     catch
     {
         Remove-Item -Path $temp -Force -ErrorAction SilentlyContinue
         $__logger.Warn("$script:ExtensionName - Unable to refresh dataset, keeping local cache: $($_.Exception.Message)")
+        return $false
     }
 }
 
@@ -441,7 +443,7 @@ function OnApplicationStarted
 
 function OnLibraryUpdated
 {
-    Update-FreeGamesCache
+    $null = Update-FreeGamesCache
     Invoke-AutoRescan
 }
 
@@ -451,7 +453,7 @@ function CheckLibrary
         $scriptMainMenuItemActionArgs
     )
 
-    Update-FreeGamesCache -Force
+    $null = Update-FreeGamesCache -Force
     Invoke-LibraryScan -ShowMessage
 }
 
@@ -461,9 +463,9 @@ function RefreshFreeGames
         $scriptMainMenuItemActionArgs
     )
 
-    Update-FreeGamesCache -Force
+    $refreshed = Update-FreeGamesCache -Force
 
-    if ($script:State.Loaded)
+    if ($refreshed -and $script:State.Loaded)
     {
         $message = [Playnite.SDK.ResourceProvider]::GetString('LOCEGS_Free_Games_Checker_RefreshSuccessMessage') -f $script:State.Count
         $PlayniteApi.Dialogs.ShowMessage($message, $script:ExtensionName)
