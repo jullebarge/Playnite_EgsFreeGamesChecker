@@ -101,7 +101,19 @@ function Invoke-JsonRequest {
 function ConvertTo-IsoDate {
     param($Value)
 
-    if ($null -eq $Value -or [string]::IsNullOrWhiteSpace([string]$Value)) { return $null }
+    if ($null -eq $Value) { return $null }
+
+    # Windows PowerShell 5.1 keeps JSON dates as strings, but PowerShell 6+ converts them to
+    # DateTime/DateTimeOffset automatically. Normalize both shapes so keys and output are stable
+    # wherever the script runs (local Windows, GitHub Actions on Linux).
+    if ($Value -is [DateTimeOffset]) {
+        return $Value.UtcDateTime.ToString('yyyy-MM-ddTHH:mm:ssZ')
+    }
+    if ($Value -is [DateTime]) {
+        return $Value.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    }
+
+    if ([string]::IsNullOrWhiteSpace([string]$Value)) { return $null }
     $dto = [DateTimeOffset]::Parse([string]$Value, [System.Globalization.CultureInfo]::InvariantCulture)
     return $dto.UtcDateTime.ToString('yyyy-MM-ddTHH:mm:ssZ')
 }
@@ -196,7 +208,7 @@ function Get-EntryKey {
     if ([string]::IsNullOrWhiteSpace($title)) {
         $title = Get-NormalizedTitle ([string]$Entry.title)
     }
-    return ('{0}|{1}' -f $title, $Entry.startDate)
+    return ('{0}|{1}' -f $title, (ConvertTo-IsoDate $Entry.startDate))
 }
 
 function Read-Dataset {
@@ -217,6 +229,18 @@ function Read-Dataset {
     if ($doc.schemaVersion -ne $SchemaVersion) {
         throw "Unsupported schemaVersion '$($doc.schemaVersion)' in $Path (expected $SchemaVersion)."
     }
+
+    # Normalize dates: PowerShell 6+ turns ISO strings into DateTime objects on parse.
+    if ($doc.PSObject.Properties['generatedAt']) { $doc.generatedAt = ConvertTo-IsoDate $doc.generatedAt }
+    if ($doc.PSObject.Properties['lastEgsRun']) { $doc.lastEgsRun = ConvertTo-IsoDate $doc.lastEgsRun }
+    if ($doc.PSObject.Properties['backfillId']) { $doc.backfillId = ConvertTo-IsoDate $doc.backfillId }
+
+    foreach ($game in @($doc.games)) {
+        if ($null -eq $game) { continue }
+        if ($game.PSObject.Properties['startDate']) { $game.startDate = ConvertTo-IsoDate $game.startDate }
+        if ($game.PSObject.Properties['endDate']) { $game.endDate = ConvertTo-IsoDate $game.endDate }
+    }
+
     return $doc
 }
 
@@ -634,7 +658,14 @@ try {
         }
     }
 
-    $totalBefore = $existingEntries.Count
+    $totalBefore = 0
+    $existingKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($entry in $existingEntries) {
+        if ($null -eq $entry) { continue }
+        [void]$existingKeys.Add((Get-EntryKey $entry))
+    }
+    $totalBefore = $existingKeys.Count
+
     $totalAfter = $entries.Count
 
     if ($totalAfter -lt $totalBefore) {
