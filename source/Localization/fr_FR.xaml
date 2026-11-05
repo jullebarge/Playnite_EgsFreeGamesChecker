@@ -12,4 +12,8 @@ Etiquette &quot;{1}&quot; ajoutée à {2} jeu(x).</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemUpdateTagName" xml:space="preserve">Changer le libellé du tag</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_PopupTagLabel" xml:space="preserve">Libellé du tag:</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_DefaultTagName" xml:space="preserve">Donné par EGS</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemRefreshFreeGames" xml:space="preserve">Actualiser la liste des jeux offerts</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_RefreshSuccessMessage" xml:space="preserve">Liste des jeux offerts actualisée : {0} entrées. Lancez &quot;Ajouter une étiquette aux jeux donnés sur l'EGS&quot; pour mettre à jour votre bibliothèque.</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_RefreshFailMessage" xml:space="preserve">Impossible de télécharger la liste des jeux offerts. Vérifiez votre connexion et les logs de l'extension.</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_AutoRescanMessage" xml:space="preserve">{0} jeu(x) de votre bibliothèque ont été étiquetés après la mise à jour de la liste des jeux offerts.</sys:String>
 </ResourceDictionary>

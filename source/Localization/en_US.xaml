@@ -12,4 +12,8 @@ Tag &quot;{1}&quot; added to {2} game(s).</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemUpdateTagName" xml:space="preserve">Update Tag Name</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_PopupTagLabel" xml:space="preserve">Tag name:</sys:String>
 	<sys:String x:Key="LOCEGS_Free_Games_Checker_DefaultTagName" xml:space="preserve">Given by EGS</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_MenuItemRefreshFreeGames" xml:space="preserve">Refresh the free games list</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_RefreshSuccessMessage" xml:space="preserve">Free games list refreshed: {0} entries. Run &quot;Add a tag to games gifted by EGS&quot; to update your library.</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_RefreshFailMessage" xml:space="preserve">Unable to download the free games list. Check your connection and the extension logs.</sys:String>
+	<sys:String x:Key="LOCEGS_Free_Games_Checker_AutoRescanMessage" xml:space="preserve">{0} game(s) from your library have been tagged after the free games list was updated.</sys:String>
 </ResourceDictionary>
