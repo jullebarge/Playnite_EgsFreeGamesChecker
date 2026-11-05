@@ -36,3 +36,10 @@ Packages:
     - 'Automatic library rescan when the dataset changes'
     - 'Games whose free period has not started yet are not tagged'
     - 'Added a menu entry to refresh the list without rescanning the library'
+  - Version: 0.6.1
+    RequiredApiVersion: 6.8.0
+    ReleaseDate: 2026-11-05
+    PackageUrl: https://github.com/jullebarge/Playnite_EgsFreeGamesChecker/releases/download/0.6.1/EGS_Free_Games_Checker_a3062a51-dfce-4e0d-9449-e29beb81f708_0_6_1.pext
+    Changelog:
+    - 'Fixed "Refresh the free games list" always reporting a download failure'
+    - 'Fixed empty dialog titles and automatic tagging of newly added EGS games'
