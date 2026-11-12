@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T23:13:30Z",
-  "lastEgsRun": "2026-11-11T23:13:30Z",
+  "generatedAt": "2026-11-12T22:29:36Z",
+  "lastEgsRun": "2026-11-12T22:29:36Z",
   "backfillId": "2026-11-05T10:12:23Z",
-  "count": 705,
+  "count": 707,
   "games": [
     {
       "title": "Subnautica",
@@ -10949,6 +10949,39 @@
       "namespace": "02d659f31e1c43a78c43fd9fd9edc089",
       "startDate": "2026-11-12T16:00:00Z",
       "endDate": "2026-11-19T16:00:00Z",
+      "type": "BASE_GAME",
+      "categories": [
+        "freegames",
+        "games/edition/base",
+        "games/edition",
+        "games"
+      ],
+      "source": "egs"
+    },
+    {
+      "title": "Alien: Isolation",
+      "normalizedTitle": "alien isolation",
+      "offerId": "d37f3694e7a04edb8347f3cb6320f9d3",
+      "namespace": "df37f065c3f14eadbf011177396e2966",
+      "startDate": "2026-11-19T16:00:00Z",
+      "endDate": "2026-11-26T16:00:00Z",
+      "type": "BASE_GAME",
+      "categories": [
+        "freegames",
+        "games",
+        "games/edition",
+        "games/edition/base",
+        "applications"
+      ],
+      "source": "egs"
+    },
+    {
+      "title": "Mark of the Deep",
+      "normalizedTitle": "mark of the deep",
+      "offerId": "1f9a12b06b4f437790b6913ad136a08c",
+      "namespace": "3d6441ab9d4246208bc97d7babf664b5",
+      "startDate": "2026-11-19T16:00:00Z",
+      "endDate": "2026-11-26T16:00:00Z",
       "type": "BASE_GAME",
       "categories": [
         "freegames",
