@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-17T23:41:37Z",
-  "lastEgsRun": "2026-11-17T23:41:37Z",
+  "generatedAt": "2026-11-18T23:13:25Z",
+  "lastEgsRun": "2026-11-18T23:13:25Z",
   "backfillId": "2026-11-05T10:12:23Z",
-  "count": 707,
+  "count": 708,
   "games": [
     {
       "title": "Subnautica",
@@ -10988,6 +10988,22 @@
         "games/edition/base",
         "games/edition",
         "games"
+      ],
+      "source": "egs"
+    },
+    {
+      "title": "Firestone – Idle Clicker Online RPG",
+      "normalizedTitle": "firestone  idle clicker online rpg",
+      "offerId": "0623017cf9f341efbe07557f46beb4e8",
+      "namespace": "bda8d2133655435982b9118972792328",
+      "startDate": "2026-11-26T16:00:00Z",
+      "endDate": "2026-12-03T16:00:00Z",
+      "type": "BASE_GAME",
+      "categories": [
+        "freegames",
+        "games",
+        "games/edition",
+        "games/edition/base"
       ],
       "source": "egs"
     }
