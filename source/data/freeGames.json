@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T23:13:25Z",
-  "lastEgsRun": "2026-11-18T23:13:25Z",
+  "generatedAt": "2026-11-19T23:21:01Z",
+  "lastEgsRun": "2026-11-19T23:21:01Z",
   "backfillId": "2026-11-05T10:12:23Z",
-  "count": 708,
+  "count": 709,
   "games": [
     {
       "title": "Subnautica",
@@ -10982,6 +10982,22 @@
       "namespace": "3d6441ab9d4246208bc97d7babf664b5",
       "startDate": "2026-11-19T16:00:00Z",
       "endDate": "2026-11-26T16:00:00Z",
+      "type": "BASE_GAME",
+      "categories": [
+        "freegames",
+        "games/edition/base",
+        "games/edition",
+        "games"
+      ],
+      "source": "egs"
+    },
+    {
+      "title": "Bread and Fred",
+      "normalizedTitle": "bread and fred",
+      "offerId": "f0a333114190492c84a9decd2bb43875",
+      "namespace": "7e95faaa77054b80828dd7d64bbeb4ff",
+      "startDate": "2026-11-26T16:00:00Z",
+      "endDate": "2026-12-03T16:00:00Z",
       "type": "BASE_GAME",
       "categories": [
         "freegames",
