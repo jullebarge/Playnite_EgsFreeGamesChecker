@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-26T00:46:48Z",
-  "lastEgsRun": "2026-11-26T00:46:48Z",
+  "generatedAt": "2026-11-27T00:52:25Z",
+  "lastEgsRun": "2026-11-27T00:52:25Z",
   "backfillId": "2026-11-05T10:12:23Z",
-  "count": 709,
+  "count": 710,
   "games": [
     {
       "title": "Subnautica",
@@ -11020,6 +11020,22 @@
         "games",
         "games/edition",
         "games/edition/base"
+      ],
+      "source": "egs"
+    },
+    {
+      "title": "Strange Antiquities",
+      "normalizedTitle": "strange antiquities",
+      "offerId": "72bd05148adb4e2cacb8b2efaa4c0297",
+      "namespace": "ca2e8ee2cacc4b69abd275a50422b010",
+      "startDate": "2026-12-03T16:00:00Z",
+      "endDate": "2026-12-10T16:00:00Z",
+      "type": "BASE_GAME",
+      "categories": [
+        "freegames",
+        "games/edition/base",
+        "games/edition",
+        "games"
       ],
       "source": "egs"
     }
